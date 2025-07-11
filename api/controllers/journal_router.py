@@ -44,16 +44,24 @@ async def create_entry(request: Request, entry: dict, entry_service: EntryServic
 # TODO: Implement GET /entries endpoint to list all journal entries
 # Example response: [{"id": "123", "work": "...", "struggle": "...", "intention": "..."}]
 @router.get("/entries")
-async def get_all_entries(request: Request):
-    # TODO: Implement get all entries endpoint
-    # Hint: Use PostgresDB and EntryService like other endpoints
-    pass
+async def get_all_entries(request: Request, entry_service: EntryService = Depends((get_all_entries))):
+    try:
+        entries = await entry_service.get_all_entries()
+        return {"entries": entries}
+    except Exception as e:
+        logger.error(f"Error fetching entries: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/entries/{entry_id}")
-async def get_entry(request: Request, entry_id: str):
-    # TODO: Implement get single entry endpoint
-    # Hint: Return 404 if entry not found
-    pass
+async def get_entry(request: Request, entry_id: str, entry_service: EntryService = Depends(get_entry_service)):
+    try:
+        entry = await entry_service.get_entry(entry_id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Entry not found")
+        return entry
+    except Exception as e:
+        logger.error(f"Error fetching entry {entry_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.patch("/entries/{entry_id}")
 async def update_entry(request: Request, entry_id: str, entry_update: dict):
@@ -69,10 +77,16 @@ async def update_entry(request: Request, entry_id: str, entry_update: dict):
 # TODO: Implement DELETE /entries/{entry_id} endpoint to remove a specific entry
 # Return 404 if entry not found
 @router.delete("/entries/{entry_id}")
-async def delete_entry(request: Request, entry_id: str):
-    # TODO: Implement delete entry endpoint
-    # Hint: Return 404 if entry not found
-    pass
+async def delete_entry(request: Request, entry_id: str, entry_service: EntryService = Depends(get_entry_service)):
+    try:
+        entry = await entry_service.get_entry(entry_id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Entry not found")
+        await entry_service.delete_entry(entry_id)
+        return {"message": "Entry deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting entry {entry_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.delete("/entries")
 async def delete_all_entries(request: Request):
