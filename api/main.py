@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 from api.controllers import journal_router
 import logging
+import os
 
 load_dotenv()
 
