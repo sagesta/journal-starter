@@ -23,6 +23,7 @@ class Entry(BaseModel):
     def sanitize_text(cls, v):
         v = v.strip()
         v = re.sub(r'<[^>]+>', '', v)
+
         if not v:
             raise ValueError('Field cannot be empty or only whitespace')
         return v
