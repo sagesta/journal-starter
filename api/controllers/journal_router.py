@@ -4,6 +4,9 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.responses import JSONResponse
 from api.repositories.postgres_repository import PostgresDB
 from api.services import EntryService
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 router = APIRouter()
@@ -44,7 +47,7 @@ async def create_entry(request: Request, entry: dict, entry_service: EntryServic
 # TODO: Implement GET /entries endpoint to list all journal entries
 # Example response: [{"id": "123", "work": "...", "struggle": "...", "intention": "..."}]
 @router.get("/entries")
-async def get_all_entries(request: Request, entry_service: EntryService = Depends((get_all_entries))):
+async def get_all_entries(request: Request, entry_service: EntryService = Depends(get_entry_service)):
     try:
         entries = await entry_service.get_all_entries()
         return {"entries": entries}
